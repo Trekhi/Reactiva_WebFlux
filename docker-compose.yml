@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+
+  batch-service:
+    build:
+      context: ./batch   # Ruta a la carpeta batch
+    container_name: batch-service
+    ports:
+      - "8078:8078"
+    environment:
+      - SPRING_APPLICATION_NAME=batch-service
+      - spring.cloud.config.uri=http://host.docker.internal:8888
+      - SPRING_PROFILES_ACTIVE=service
+    depends_on:
+      - webflux-service  # Indica que batch-service depende de webflux-service
+    networks:
+      - orchestration-network
+
+  webflux-service:
+    build:
+      context: ./webflux  # Ruta a la carpeta webflux
+    container_name: webflux-service
+    ports:
+      - "9000:9000"
+    environment:
+      - SPRING_APPLICATION_NAME=webflux-service
+      - spring.cloud.config.uri=http://host.docker.internal:8888
+      - SPRING_PROFILES_ACTIVE=service  
+    networks:
+      - orchestration-network
+  
+  webhook-service:
+    build:
+      context: ./webHook  # Ruta a la carpeta webHook
+    container_name: webhook-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_APPLICATION_NAME=webhook-service
+      - spring.cloud.config.uri=http://host.docker.internal:8888
+      - SPRING_PROFILES_ACTIVE=service
+    networks:
+      - orchestration-network
+    
+  step-one:
+    build:
+      context: ./ResolveEnigmaAp1  # Ruta a la carpeta ResolveEnigmaAp1
+    container_name: step-one
+    ports:
+      - "8079:8079"
+    environment:
+      - SPRING_APPLICATION_NAME=step-one
+      - spring.cloud.config.uri=http://host.docker.internal:8888
+      - SPRING_PROFILES_ACTIVE=one
+    networks:
+      - orchestration-network
+
+  step-two:
+    build:
+      context: ./ResolveEnigmaAp2  # Ruta a la carpeta ResolveEnigmaAp2
+    container_name: step-two
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_APPLICATION_NAME=step-two
+      - spring.cloud.config.uri=http://host.docker.internal:8888
+      - SPRING_PROFILES_ACTIVE=two
+    networks:
+      - orchestration-network
+
+  step-three:
+    build:
+      context: ./ResolveEnigmaAp3  # Ruta a la carpeta ResolveEnigmaAp3
+    container_name: step-three
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_APPLICATION_NAME=step-three
+      - spring.cloud.config.uri=http://host.docker.internal:8888
+      - SPRING_PROFILES_ACTIVE=three
+    networks:
+      - orchestration-network  
+
+networks:
+  orchestration-network:
+    driver: bridge
